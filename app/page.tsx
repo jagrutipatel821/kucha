@@ -48,24 +48,6 @@ const brands = [
   { name: 'Loctite', logo: '/brands/Loctite.jpg' },
   { name: 'Hilti', logo: '/brands/Hilti.jpg' },
 ];
-const catalogues = [
-  {
-    title: 'Industrial Hardware Catalogue',
-    cover: '/catalogues/covers/tools.png',
-    pdf: '/catalogues/hardware-tools.pdf',
-  },
-  {
-    title: 'Safety Products Catalogue',
-    cover: '/catalogues/covers/safety.jpg',
-    pdf: '/catalogues/safety-equipment.pdf',
-  },
-  {
-    title: 'Power Tools Catalogue',
-    cover: '/catalogues/covers/tools.png',
-    pdf: '/catalogues/hardware-tools.pdf',
-  },
-];
-
 
 /* =====================
    PAGE
@@ -398,74 +380,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      
-
-   {/* ================= CATALOGUES ================= */}
-<section className="relative py-24 bg-gradient-to-b from-gray-50 via-white to-gray-100">
-  <div className="max-w-7xl mx-auto px-6">
-
-    {/* Section Header */}
-    <div className="text-center mb-14">
-      <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-        Product Catalogues
-      </h2>
-      <p className="text-gray-600 max-w-2xl mx-auto">
-        Download our detailed catalogues featuring certified industrial-grade products
-      </p>
-    </div>
-
-    {/* Catalogue Cards */}
-    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-      {catalogues.map((c, i) => (
-        <div
-          key={i}
-          className="group relative bg-white rounded-3xl border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-        >
-          {/* Image */}
-          <div className="relative h-[380px] bg-gray-100 flex items-center justify-center overflow-hidden">
-            <Image
-              src={c.cover}
-              alt={c.title}
-              fill
-              className="object-contain p-8 transition-transform duration-500 group-hover:scale-105"
-            />
-
-            {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 text-center">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              {c.title}
-            </h3>
-
-            <Link
-              href={c.pdf}
-              target="_blank"
-              className="inline-flex items-center gap-2 bg-[#A83232] hover:bg-[#8a2828] text-white px-6 py-3 rounded-full font-semibold transition-colors"
-            >
-              View Catalogue
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </div>
-
-          {/* Accent Bar */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A83232] to-[#328A8A]"></div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
 
       {/* ================= STATS ================= */}
       <section className="py-24 bg-white">
