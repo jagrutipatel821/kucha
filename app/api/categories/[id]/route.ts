@@ -6,12 +6,13 @@ import { requireAdmin } from '@/lib/auth';
 // GET - Fetch single category
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id } = await context.params;
 
-    const category = await Category.findById(params.id);
+    const category = await Category.findById(id);
     if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
@@ -33,13 +34,14 @@ export async function GET(
 // PUT - Update category
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await requireAdmin(request);
     if (auth.response) return auth.response;
 
     await connectDB();
+    const { id } = await context.params;
 
     const updateData = await request.json();
 
@@ -47,7 +49,7 @@ export async function PUT(
     if (updateData.name) {
       const existingCategory = await Category.findOne({ 
         name: updateData.name, 
-        _id: { $ne: params.id } 
+        _id: { $ne: id } 
       });
       if (existingCategory) {
         return NextResponse.json(
@@ -59,7 +61,7 @@ export async function PUT(
 
     // Update category
     const category = await Category.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true, runValidators: true }
     );
@@ -88,15 +90,16 @@ export async function PUT(
 // DELETE - Delete category
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await requireAdmin(request);
     if (auth.response) return auth.response;
 
     await connectDB();
+    const { id } = await context.params;
 
-    const category = await Category.findById(params.id);
+    const category = await Category.findById(id);
     if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
@@ -113,7 +116,7 @@ export async function DELETE(
     }
 
     // Delete category
-    await Category.findByIdAndDelete(params.id);
+    await Category.findByIdAndDelete(id);
 
     return NextResponse.json(
       { message: 'Category deleted successfully' },
