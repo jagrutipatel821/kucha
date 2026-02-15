@@ -43,7 +43,7 @@ export default function CataloguesPage() {
         {/* ===== Cards ===== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-10">
           {catalogues.map((item) => (
-            <CatalogueCard key={item.id} catalogue={item} />
+            <CatalogueCard key={item.title} catalogue={item} />
           ))}
         </div>
 
