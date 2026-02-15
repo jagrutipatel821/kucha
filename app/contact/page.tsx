@@ -32,7 +32,7 @@ const CONTACTS = [
 
 const BUSINESS_INFO = {
   name: 'KUCHA ENTERPRISE',
-  email: 'kuchakalpeh12@gmail.com',
+  email: 'kuchaent.12@gmail.com',
   address: [
     'D/7, Keval Shopping Centre',
     'Old National Highway, Ankleshwar - 393002',
