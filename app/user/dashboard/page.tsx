@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -123,7 +123,7 @@ function ProfileMenu({
 /* ---------------------------
    UserDashboard (updated to fetch orders)
    --------------------------- */
-export default function UserDashboard() {
+function UserDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('overview');
@@ -482,6 +482,24 @@ export default function UserDashboard() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function UserDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="p-8 bg-white rounded-2xl border border-slate-200 shadow-sm text-center">
+              <p className="text-slate-700">Loading your dashboard...</p>
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <UserDashboardContent />
+    </Suspense>
   );
 }
 
