@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
     const brand = formData.get('brand') as string;
-    const price = Number(formData.get('price')) || 0;
     const stock = Number(formData.get('stock')) || 0;
     const featured = formData.get('featured') === 'true';
     const status = (formData.get('status') as string) || 'active';
@@ -71,7 +70,6 @@ export async function POST(request: NextRequest) {
       description,
       category,
       brand,
-      price,
       stock,
       image: imageUrl,
       featured,

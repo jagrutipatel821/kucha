@@ -6,16 +6,29 @@ import { requireAdmin } from '@/lib/auth';
 /* =====================
    GET ACTIVE OFFER
 ===================== */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
+    const { searchParams } = new URL(request.url);
+    const scope = searchParams.get('scope');
 
-    const today = new Date();
+    if (scope === 'all') {
+      const auth = await requireAdmin(request);
+      if (auth.response) return auth.response;
+
+      const offers = await Offer.find({}).sort({ createdAt: -1 }).lean();
+      return NextResponse.json({ offers }, { status: 200 });
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     const offer = await Offer.findOne({
       active: true,
-      startDate: { $lte: today },
-      endDate: { $gte: today },
+      startDate: { $lte: todayEnd },
+      endDate: { $gte: todayStart },
     }).lean();
 
     return NextResponse.json({ offer });
@@ -41,14 +54,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Convert date strings to Date objects
+    const startDate = new Date(body.startDate);
+    const endDate = new Date(body.endDate);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
     const offerData = {
       title: body.title,
       subtitle: body.subtitle || undefined,
       description: body.description,
       image: body.image || undefined,
       bgColor: body.bgColor || 'bg-black',
-      startDate: new Date(body.startDate),
-      endDate: new Date(body.endDate),
+      startDate,
+      endDate,
       active: true,
     };
 

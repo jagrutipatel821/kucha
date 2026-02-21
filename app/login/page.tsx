@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, FormEvent, useEffect, useState } from 'react';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
   const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +25,8 @@ export default function LoginPage() {
 
         if (res.ok) {
           const user = await res.json();
-          router.replace(user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+          const target = getValidRedirect(redirect, user.role);
+          router.replace(target);
           return;
         }
       } catch {
@@ -37,7 +40,16 @@ export default function LoginPage() {
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, redirect]);
+
+  function getValidRedirect(redirectUrl: string | null, role: string): string {
+    if (!redirectUrl || !redirectUrl.startsWith('/') || redirectUrl.startsWith('//')) {
+      return role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+    }
+    if (role === 'admin' && (redirectUrl.startsWith('/admin') || redirectUrl === '/')) return redirectUrl;
+    if (role === 'user' && (redirectUrl.startsWith('/user') || redirectUrl.startsWith('/cart') || redirectUrl.startsWith('/checkout'))) return redirectUrl;
+    return role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,6 +60,7 @@ export default function LoginPage() {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password, adminKey }),
       });
 
@@ -58,7 +71,8 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(data.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+      const target = getValidRedirect(redirect, data.role);
+      router.push(target);
     } catch {
       setError('Unable to login right now. Please try again.');
     } finally {
@@ -132,5 +146,17 @@ export default function LoginPage() {
         </p>
       </form>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-white to-gray-200 px-4">
+        <p className="text-gray-700">Loading...</p>
+      </main>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

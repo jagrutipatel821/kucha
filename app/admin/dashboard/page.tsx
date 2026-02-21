@@ -4,6 +4,11 @@
 
 import { useEffect, useState } from 'react';
 import AdminTabs from '../components/AdminTabs';
+import ProductsTab from './tabs/ProductsTab';
+import CategoriesTab from './tabs/CategoriesTab';
+import OrdersTab from './tabs/OrdersTab';
+import UsersTab from './tabs/UsersTab';
+import OffersTab from './tabs/OffersTab';
 
 type Tab =
   | 'overview'
@@ -57,31 +62,11 @@ export default function AdminDashboard() {
             Welcome to the Admin Panel
           </div>
         )}
-        {activeTab === 'products' && (
-          <div className="bg-white p-6 rounded shadow">
-            Products panel coming soon.
-          </div>
-        )}
-        {activeTab === 'categories' && (
-          <div className="bg-white p-6 rounded shadow">
-            Categories panel coming soon.
-          </div>
-        )}
-        {activeTab === 'orders' && (
-          <div className="bg-white p-6 rounded shadow">
-            Orders panel coming soon.
-          </div>
-        )}
-        {activeTab === 'users' && (
-          <div className="bg-white p-6 rounded shadow">
-            Users panel coming soon.
-          </div>
-        )}
-        {activeTab === 'offers' && (
-          <div className="bg-white p-6 rounded shadow">
-            Offers panel coming soon.
-          </div>
-        )}
+        {activeTab === 'products' && <ProductsTab />}
+        {activeTab === 'categories' && <CategoriesTab />}
+        {activeTab === 'orders' && <OrdersTab />}
+        {activeTab === 'users' && <UsersTab />}
+        {activeTab === 'offers' && <OffersTab />}
       </main>
     </div>
   );

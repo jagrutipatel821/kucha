@@ -6,7 +6,6 @@ export interface Product {
   description: string;
   category: string;
   brand?: string;
-  price?: number;
   stock: number;
   image?: string;
   featured: boolean;
@@ -40,7 +39,10 @@ export interface User {
 export interface Offer {
   _id?: string;
   title: string;
+  subtitle?: string;
   description: string;
+  image?: string;
+  bgColor?: string;
   startDate: string;
   endDate: string;
   active: boolean;

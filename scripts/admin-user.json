@@ -1,0 +1,8 @@
+{
+  "firstName": "Admin",
+  "lastName": "User",
+  "email": "admin@kucha.com",
+  "password": "REPLACE_WITH_BCRYPT_HASH_RUN_write_admin_json_js",
+  "role": "admin",
+  "isActive": true
+}

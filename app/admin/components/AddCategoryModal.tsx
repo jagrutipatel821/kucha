@@ -5,14 +5,14 @@ import { Category } from '../types';
 
 interface AddCategoryModalProps {
   onClose: () => void;
-  onAdd: (category: Omit<Category, 'id'>) => void;
+  onAdd: (category: Omit<Category, '_id'>) => void;
 }
 
 export default function AddCategoryModal({
   onClose,
   onAdd,
 }: AddCategoryModalProps) {
-  const [formData, setFormData] = useState<Omit<Category, 'id'>>({
+  const [formData, setFormData] = useState<Omit<Category, '_id'>>({
     name: '',
     description: '',
     status: 'active',
@@ -35,7 +35,6 @@ export default function AddCategoryModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAdd(formData);
-    onClose(); // close modal after submit
   };
 
   return (

@@ -12,6 +12,7 @@ interface EditCategoryModalProps {
 export default function EditCategoryModal({ category, onClose, onUpdate }: EditCategoryModalProps) {
   const [formData, setFormData] = useState({
     name: category.name,
+    description: category.description,
     status: category.status
   });
 
@@ -24,12 +25,11 @@ export default function EditCategoryModal({ category, onClose, onUpdate }: EditC
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    
+    const { name, value } = e.target;
+
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     });
   };
 
@@ -74,7 +74,7 @@ export default function EditCategoryModal({ category, onClose, onUpdate }: EditC
                 name="description"
                 required
                 rows={3}
-                value={(formData as any).description || ""}
+                value={formData.description}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -95,21 +95,6 @@ export default function EditCategoryModal({ category, onClose, onUpdate }: EditC
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-            </div>
-
-            <div>
-              <label htmlFor="productCount" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Count
-              </label>
-              <input
-                id="productCount"
-                name="productCount"
-                type="number"
-                min="0"
-                value={(formData as any).productCount || 0}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
             </div>
 
             <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-4 pt-4 sm:pt-6">

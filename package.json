@@ -9,6 +9,8 @@
     "lint": "next lint",
     "seed": "node scripts/seed.js",
     "seed:products": "node scripts/seed-kucha-products.js",
+    "create:admin": "node scripts/create-admin.js",
+    "write:admin-json": "node scripts/write-admin-json.js",
     "test:db": "node scripts/test-connection.js"
   },
   "dependencies": {

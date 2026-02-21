@@ -14,7 +14,6 @@ export default function EditProductModal({ product, onClose, onUpdate, categorie
   const [formData, setFormData] = useState({
     name: product.name,
     description: product.description,
-    price: product.price?.toString() ?? '',
     category: product.category,
     stock: product.stock.toString(),
     featured: product.featured,
@@ -42,7 +41,7 @@ export default function EditProductModal({ product, onClose, onUpdate, categorie
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.name || !formData.description || !formData.price || !formData.stock) {
+    if (!formData.name || !formData.description || !formData.stock) {
       alert('Please fill in all required fields');
       return;
     }
@@ -50,7 +49,6 @@ export default function EditProductModal({ product, onClose, onUpdate, categorie
     onUpdate({
       ...product,
       ...formData,
-      price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
       image: imagePreview || product.image
     });
@@ -83,7 +81,7 @@ export default function EditProductModal({ product, onClose, onUpdate, categorie
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Product Name *
@@ -94,23 +92,6 @@ export default function EditProductModal({ product, onClose, onUpdate, categorie
                   type="text"
                   required
                   value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price *
-                </label>
-                <input
-                  id="price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={formData.price}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />

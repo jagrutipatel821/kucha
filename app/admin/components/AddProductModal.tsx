@@ -5,7 +5,7 @@ import { Product, Category } from '../types';
 
 interface AddProductModalProps {
   onClose: () => void;
-  onAdd: (product: Omit<Product, 'id'>) => void;
+  onAdd: (product: Product) => void;
   categories: Category[];
 }
 
@@ -19,6 +19,7 @@ export default function AddProductModal({
     description: '',
     category: categories.length > 0 ? categories[0].name : '',
     brand: '',
+    stock: '0',
     featured: false,
     status: 'active' as 'active' | 'inactive',
   });
@@ -67,6 +68,7 @@ export default function AddProductModal({
     data.append('description', formData.description);
     data.append('category', formData.category);
     data.append('brand', formData.brand);
+    data.append('stock', formData.stock || '0');
     data.append('featured', String(formData.featured));
     data.append('status', formData.status);
     if (selectedImage) data.append('image', selectedImage);
@@ -74,6 +76,7 @@ export default function AddProductModal({
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
+        credentials: 'include',
         body: data,
       });
 
@@ -135,6 +138,22 @@ export default function AddProductModal({
                   className="w-full px-4 py-3 border rounded-lg"
                 />
               </div>
+            </div>
+
+            {/* Stock */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Stock *
+              </label>
+              <input
+                name="stock"
+                type="number"
+                min="0"
+                required
+                value={formData.stock}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border rounded-lg"
+              />
             </div>
 
             {/* Category */}

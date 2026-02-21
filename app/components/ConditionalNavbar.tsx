@@ -184,15 +184,13 @@ export default function ConditionalNavbar() {
             </div>
           ) : (
             <>
-              {/* Login button temporarily hidden until auth UI work is completed */}
-              {/* 
               <Link
                 href="/login"
                 className="hidden md:inline-flex items-center px-6 py-2 rounded-full bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition shadow-md"
               >
                 Login
               </Link>
-              */}
+             
             </>
           )}
 
@@ -267,18 +265,13 @@ export default function ConditionalNavbar() {
                 </button>
               </>
             ) : (
-              <>
-                {/* Mobile login button temporarily hidden until auth UI work is completed */}
-                {/* 
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="mt-4 text-center px-6 py-2 rounded-full bg-orange-600 text-white hover:bg-orange-700 transition"
-                >
-                  Login
-                </Link>
-                */}
-              </>
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="mt-4 text-center block px-6 py-2 rounded-full bg-orange-600 text-white hover:bg-orange-700 transition"
+              >
+                Login
+              </Link>
             )}
           </nav>
         </div>
