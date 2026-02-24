@@ -23,6 +23,11 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!MONGODB_URI) {
     throw new Error('lib/mongodb: MONGODB_URI is not set. Set it in .env.local');
   }
+  if (process.env.NODE_ENV === 'production' && /localhost|127\.0\.0\.1/.test(MONGODB_URI)) {
+    throw new Error(
+      'lib/mongodb: MONGODB_URI points to localhost in production. Use a hosted MongoDB URI (for example, MongoDB Atlas).'
+    );
+  }
 
   if (cached.conn) {
     return cached.conn;

@@ -119,8 +119,14 @@ export async function POST(req: Request) {
       message: 'Login successful',
       role: user.role,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('LOGIN ERROR:', error);
+    const isDbUnavailable =
+      error?.name === 'MongooseServerSelectionError' ||
+      String(error?.message || '').includes('ECONNREFUSED');
+    if (isDbUnavailable) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
