@@ -15,12 +15,15 @@ import {
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_LOGIN_KEY = process.env.ADMIN_REGISTRATION_KEY;
 
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET missing in .env.local');
-}
-
 export async function POST(req: Request) {
   try {
+    if (!JWT_SECRET) {
+      return NextResponse.json(
+        { error: 'JWT secret is not configured on server' },
+        { status: 500 }
+      );
+    }
+
     const ip = getClientIp(req);
     const ipRate = checkRequestRateLimit(ip);
     if (!ipRate.allowed) {
@@ -37,9 +40,10 @@ export async function POST(req: Request) {
 
     const { email, password, adminKey } = await req.json();
     const normalizedEmail = String(email || '').trim().toLowerCase();
+    const normalizedPassword = String(password || '');
     const lockKey = `${ip}:${normalizedEmail || 'unknown-email'}`;
 
-    if (!normalizedEmail || !password) {
+    if (!normalizedEmail || !normalizedPassword) {
       return NextResponse.json(
         { error: 'Email and password required' },
         { status: 400 }
@@ -67,7 +71,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Account disabled' }, { status: 403 });
     }
 
-    const match = await bcrypt.compare(password, user.password);
+    if (!user.password || typeof user.password !== 'string') {
+      recordLoginFailure(lockKey);
+      return NextResponse.json(
+        { error: 'Account credentials are invalid. Please reset password.' },
+        { status: 401 }
+      );
+    }
+
+    const match = await bcrypt.compare(normalizedPassword, user.password);
     if (!match) {
       recordLoginFailure(lockKey);
       return NextResponse.json({ error: 'Password is wrong' }, { status: 401 });
@@ -75,13 +87,14 @@ export async function POST(req: Request) {
 
     if (user.role === 'admin') {
       const providedAdminKey = String(adminKey || '').trim();
-      if (!ADMIN_LOGIN_KEY) {
+      const expectedAdminKey = String(ADMIN_LOGIN_KEY || '').trim();
+      if (!expectedAdminKey) {
         return NextResponse.json(
           { error: 'Admin login key is not configured on server' },
           { status: 500 }
         );
       }
-      if (!providedAdminKey || providedAdminKey !== ADMIN_LOGIN_KEY) {
+      if (!providedAdminKey || providedAdminKey !== expectedAdminKey) {
         recordLoginFailure(lockKey);
         return NextResponse.json({ error: 'Invalid admin secret key' }, { status: 401 });
       }
