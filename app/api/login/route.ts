@@ -11,6 +11,7 @@ import {
   getClientIp,
   recordLoginFailure,
 } from '@/lib/authRateLimit';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_LOGIN_KEY = process.env.ADMIN_REGISTRATION_KEY;
@@ -38,7 +39,13 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const { email, password, adminKey } = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    const { email, password, adminKey } = body;
     const normalizedEmail = String(email || '').trim().toLowerCase();
     const normalizedPassword = String(password || '');
     const lockKey = `${ip}:${normalizedEmail || 'unknown-email'}`;
@@ -119,12 +126,9 @@ export async function POST(req: Request) {
       message: 'Login successful',
       role: user.role,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('LOGIN ERROR:', error);
-    const isDbUnavailable =
-      error?.name === 'MongooseServerSelectionError' ||
-      String(error?.message || '').includes('ECONNREFUSED');
-    if (isDbUnavailable) {
+    if (isDatabaseConnectionError(error)) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

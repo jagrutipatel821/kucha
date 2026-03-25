@@ -2,12 +2,20 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 
 export async function POST(req: Request) {
   try {
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
     await connectDB();
 
-    const { firstName, lastName, email, password } = await req.json();
+    const { firstName, lastName, email, password } = body;
     const normalizedFirstName = String(firstName || '').trim();
     const normalizedLastName = String(lastName || '').trim();
     const normalizedEmail = String(email || '').trim().toLowerCase();
@@ -47,11 +55,20 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ message: 'Registration successful' }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('REGISTER ERROR:', error);
 
-    if (error?.code === 11000) {
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+
+    const err = error as { code?: number; name?: string };
+    if (err?.code === 11000) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+    }
+
+    if (err?.name === 'ValidationError') {
+      return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
     }
 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

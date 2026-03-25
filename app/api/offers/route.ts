@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Offer from '@/models/Offer';
 import { requireAdmin } from '@/lib/auth';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 
 /* =====================
    GET ACTIVE OFFER
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ offer });
   } catch (error) {
     console.error('GET /api/offers error:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json(
       { error: 'Failed to fetch offer' },
       { status: 500 }
@@ -100,10 +104,14 @@ export async function POST(req: NextRequest) {
     const offer = await Offer.create(offerData);
 
     return NextResponse.json({ offer }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('POST /api/offers error:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+    const err = error as { message?: string };
     return NextResponse.json(
-      { error: error.message || 'Failed to create offer' },
+      { error: err.message || 'Failed to create offer' },
       { status: 500 }
     );
   }

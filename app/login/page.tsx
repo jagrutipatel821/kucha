@@ -25,9 +25,11 @@ function LoginForm() {
 
         if (res.ok) {
           const user = await res.json();
-          const target = getValidRedirect(redirect, user.role);
-          router.replace(target);
-          return;
+          if (user && typeof user === 'object' && 'id' in user && 'role' in user) {
+            const target = getValidRedirect(redirect, user.role as string);
+            router.replace(target);
+            return;
+          }
         }
       } catch {
         // ignore and show login form

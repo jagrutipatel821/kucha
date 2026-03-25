@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,6 +26,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ users: normalizedUsers }, { status: 200 });
   } catch (error) {
     console.error('/api/users GET error:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }

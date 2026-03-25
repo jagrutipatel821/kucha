@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
 import { requireAdmin } from '@/lib/auth';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 
 /* =========================
    GET – Fetch all products
@@ -32,6 +33,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ products }, { status: 200 });
   } catch (error) {
     console.error('Error fetching products:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json(
       { error: 'Failed to fetch products' },
       { status: 500 }
@@ -51,14 +55,21 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const name = formData.get('name') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
-    const brand = formData.get('brand') as string;
+    const name = String(formData.get('name') || '').trim();
+    const description = String(formData.get('description') || '').trim();
+    const category = String(formData.get('category') || '').trim();
+    const brand = String(formData.get('brand') || '').trim();
     const stock = Number(formData.get('stock')) || 0;
     const featured = formData.get('featured') === 'true';
     const status = (formData.get('status') as string) || 'active';
     const imageFile = formData.get('image') as File | null;
+
+    if (!name || !description || !category) {
+      return NextResponse.json(
+        { error: 'Name, description, and category are required' },
+        { status: 400 }
+      );
+    }
 
     let imageUrl = '';
     if (imageFile) {
@@ -82,10 +93,17 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json({ product }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating product:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+    const err = error as { message?: string; name?: string };
+    if (err?.name === 'ValidationError') {
+      return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to create product' },
+      { error: err.message || 'Failed to create product' },
       { status: 500 }
     );
   }

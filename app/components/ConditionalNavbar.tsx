@@ -46,7 +46,7 @@ export default function ConditionalNavbar() {
           return;
         }
         const data = await res.json();
-        setUser(data);
+        setUser(data && typeof data === 'object' && 'id' in data ? data : null);
       } catch {
         if (!active) return;
         setUser(null);

@@ -1,6 +1,7 @@
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Offer from '@/models/Offer';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 import OfferHeroSection from '../components/OfferHeroSection';
 import ProductCard from '../components/ProductCard';
 import SearchableProducts from '../components/SearchableProducts';
@@ -40,6 +41,9 @@ export default async function ProductsPage() {
     }).lean();
   } catch (error) {
     console.error('Products page error:', error);
+    if (!isDatabaseConnectionError(error)) {
+      throw error;
+    }
   }
 
   return (

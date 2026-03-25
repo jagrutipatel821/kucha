@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Category from '@/models/Category';
 import { requireAdmin } from '@/lib/auth';
+import { isDatabaseConnectionError } from '@/lib/dbErrors';
 
 // GET - Fetch all categories
 export async function GET(request: NextRequest) {
@@ -24,6 +25,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching categories:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json(
       { error: 'Failed to fetch categories' },
       { status: 500 }
@@ -69,6 +73,16 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating category:', error);
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+    const err = error as { name?: string; code?: number };
+    if (err?.name === 'ValidationError') {
+      return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
+    }
+    if (err?.code === 11000) {
+      return NextResponse.json({ error: 'Category with this name already exists' }, { status: 400 });
+    }
     return NextResponse.json(
       { error: 'Failed to create category' },
       { status: 500 }

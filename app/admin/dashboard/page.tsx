@@ -28,8 +28,9 @@ export default function AdminDashboard() {
       if (!res.ok) return (window.location.href = '/login');
 
       const user = await res.json();
+      if (!user?.id) return (window.location.href = '/login');
       if (user.role !== 'admin') {
-        window.location.href = '/dashboard';
+        window.location.href = '/user/dashboard';
         return;
       }
 

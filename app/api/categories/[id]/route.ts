@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import Category from '@/models/Category';
 import { requireAdmin } from '@/lib/auth';
+import { isDatabaseConnectionError, isMongooseCastError } from '@/lib/dbErrors';
 
 // GET - Fetch single category
 export async function GET(
@@ -11,6 +13,10 @@ export async function GET(
   try {
     await connectDB();
     const { id } = await context.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
+    }
 
     const category = await Category.findById(id);
     if (!category) {
@@ -24,6 +30,12 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching category:', error);
+    if (isMongooseCastError(error)) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
+    }
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json(
       { error: 'Failed to fetch category' },
       { status: 500 }
@@ -42,6 +54,10 @@ export async function PUT(
 
     await connectDB();
     const { id } = await context.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
+    }
 
     const updateData = await request.json();
 
@@ -80,6 +96,12 @@ export async function PUT(
 
   } catch (error) {
     console.error('Error updating category:', error);
+    if (isMongooseCastError(error)) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
+    }
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json(
       { error: 'Failed to update category' },
       { status: 500 }
@@ -98,6 +120,10 @@ export async function DELETE(
 
     await connectDB();
     const { id } = await context.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
+    }
 
     const category = await Category.findById(id);
     if (!category) {
@@ -125,6 +151,12 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Error deleting category:', error);
+    if (isMongooseCastError(error)) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
+    }
+    if (isDatabaseConnectionError(error)) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
     return NextResponse.json(
       { error: 'Failed to delete category' },
       { status: 500 }

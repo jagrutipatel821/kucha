@@ -2,6 +2,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 import User from '@/models/User';
 import { connectDB } from '@/lib/mongodb';
+import { DatabaseUnavailableError, isDatabaseConnectionError } from '@/lib/dbErrors';
 
 type AppRole = 'user' | 'admin';
 
@@ -36,17 +37,27 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
 
   if (!decoded.id) return null;
 
-  await connectDB();
-  const user = (await User.findById(decoded.id)
-    .select('_id role isActive firstName lastName email')
-    .lean()) as {
-      _id: unknown;
-      role: AppRole;
-      isActive: boolean;
-      firstName?: string;
-      lastName?: string;
-      email?: string;
-    } | null;
+  let user: {
+    _id: unknown;
+    role: AppRole;
+    isActive: boolean;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  } | null;
+
+  try {
+    await connectDB();
+    user = (await User.findById(decoded.id)
+      .select('_id role isActive firstName lastName email')
+      .lean()) as typeof user;
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      throw new DatabaseUnavailableError();
+    }
+    throw error;
+  }
+
   if (!user || !user.isActive) return null;
 
   return {
@@ -61,7 +72,18 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
 export async function requireAdmin(
   request: NextRequest
 ): Promise<{ user?: AuthUser; response?: NextResponse }> {
-  const user = await getAuthUser(request);
+  let user: AuthUser | null;
+  try {
+    user = await getAuthUser(request);
+  } catch (error) {
+    if (error instanceof DatabaseUnavailableError) {
+      return {
+        response: NextResponse.json({ error: 'Database unavailable' }, { status: 503 }),
+      };
+    }
+    throw error;
+  }
+
   if (!user) {
     return {
       response: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }),

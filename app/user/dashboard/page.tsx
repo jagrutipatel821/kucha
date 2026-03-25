@@ -167,14 +167,14 @@ function UserDashboardContent() {
           signal: controller.signal,
         });
         if (!meRes.ok) {
-          if (meRes.status === 401) {
-            router.replace('/login?redirect=/user/dashboard');
-            return;
-          }
           throw new Error('Failed to fetch profile');
         }
 
         const me = await meRes.json();
+        if (!me || typeof me !== 'object' || !('id' in me)) {
+          router.replace('/login?redirect=/user/dashboard');
+          return;
+        }
         if (active) setUser(me);
 
         const res = await fetch('/api/orders', {
