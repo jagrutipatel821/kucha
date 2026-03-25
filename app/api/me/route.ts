@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
 import { DatabaseUnavailableError, isDatabaseConnectionError } from '@/lib/dbErrors';
+import { isMissingEnvironmentVariableError } from '@/lib/serverEnv';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +14,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
     console.error('/api/me error:', error);
+    if (isMissingEnvironmentVariableError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     if (error instanceof DatabaseUnavailableError || isDatabaseConnectionError(error)) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }

@@ -12,18 +12,14 @@ import {
   recordLoginFailure,
 } from '@/lib/authRateLimit';
 import { isDatabaseConnectionError } from '@/lib/dbErrors';
-
-const JWT_SECRET = process.env.JWT_SECRET;
-const ADMIN_LOGIN_KEY = process.env.ADMIN_REGISTRATION_KEY;
+import {
+  getRequiredEnv,
+  isMissingEnvironmentVariableError,
+} from '@/lib/serverEnv';
 
 export async function POST(req: Request) {
   try {
-    if (!JWT_SECRET) {
-      return NextResponse.json(
-        { error: 'JWT secret is not configured on server' },
-        { status: 500 }
-      );
-    }
+    const jwtSecret = getRequiredEnv('JWT_SECRET');
 
     const ip = getClientIp(req);
     const ipRate = checkRequestRateLimit(ip);
@@ -94,13 +90,7 @@ export async function POST(req: Request) {
 
     if (user.role === 'admin') {
       const providedAdminKey = String(adminKey || '').trim();
-      const expectedAdminKey = String(ADMIN_LOGIN_KEY || '').trim();
-      if (!expectedAdminKey) {
-        return NextResponse.json(
-          { error: 'Admin login key is not configured on server' },
-          { status: 500 }
-        );
-      }
+      const expectedAdminKey = getRequiredEnv('ADMIN_REGISTRATION_KEY');
       if (!providedAdminKey || providedAdminKey !== expectedAdminKey) {
         recordLoginFailure(lockKey);
         return NextResponse.json({ error: 'Invalid admin secret key' }, { status: 401 });
@@ -109,7 +99,7 @@ export async function POST(req: Request) {
 
     clearLoginFailures(lockKey);
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET as string, {
+    const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, {
       expiresIn: '7d',
     });
 
@@ -128,6 +118,9 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('LOGIN ERROR:', error);
+    if (isMissingEnvironmentVariableError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     if (isDatabaseConnectionError(error)) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }

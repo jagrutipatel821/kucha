@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
-
-const MONGODB_URI = process.env.MONGODB_URI;
+import { getRequiredEnv } from '@/lib/serverEnv';
 
 /**
  * If the URI has no /database name, the Node driver uses "test", so users seeded
@@ -52,10 +51,9 @@ const cached: Cached = globalAny._mongoose || { conn: null, promise: null };
  * Throws on connection/configuration failure.
  */
 export async function connectDB(): Promise<typeof mongoose> {
-  if (!MONGODB_URI) {
-    throw new Error('lib/mongodb: MONGODB_URI is not set. Set it in .env.local');
-  }
-  if (process.env.NODE_ENV === 'production' && /localhost|127\.0\.0\.1/.test(MONGODB_URI)) {
+  const mongoUri = getRequiredEnv('MONGODB_URI');
+
+  if (process.env.NODE_ENV === 'production' && /localhost|127\.0\.0\.1/.test(mongoUri)) {
     throw new Error(
       'lib/mongodb: MONGODB_URI points to localhost in production. Use a hosted MongoDB URI (for example, MongoDB Atlas).'
     );
@@ -66,8 +64,8 @@ export async function connectDB(): Promise<typeof mongoose> {
   }
 
   if (!cached.promise) {
-    const uri = resolvedMongoUri(MONGODB_URI);
-    if (uri !== MONGODB_URI.trim()) {
+    const uri = resolvedMongoUri(mongoUri);
+    if (uri !== mongoUri.trim()) {
       console.warn(
         `lib/mongodb: MONGODB_URI had no database name; connecting to "${process.env.MONGODB_DB_NAME || 'kuchaenterprise'}" (set MONGODB_DB_NAME to override).`
       );

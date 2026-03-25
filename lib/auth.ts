@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import User from '@/models/User';
 import { connectDB } from '@/lib/mongodb';
 import { DatabaseUnavailableError, isDatabaseConnectionError } from '@/lib/dbErrors';
+import {
+  getRequiredEnv,
+  isMissingEnvironmentVariableError,
+} from '@/lib/serverEnv';
 
 type AppRole = 'user' | 'admin';
 
@@ -20,10 +24,7 @@ export type AuthUser = {
 };
 
 export async function getAuthUser(request: NextRequest): Promise<AuthUser | null> {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is missing in environment');
-  }
+  const secret = getRequiredEnv('JWT_SECRET');
 
   const token = request.cookies.get('token')?.value;
   if (!token) return null;
@@ -79,6 +80,11 @@ export async function requireAdmin(
     if (error instanceof DatabaseUnavailableError) {
       return {
         response: NextResponse.json({ error: 'Database unavailable' }, { status: 503 }),
+      };
+    }
+    if (isMissingEnvironmentVariableError(error)) {
+      return {
+        response: NextResponse.json({ error: error.message }, { status: 500 }),
       };
     }
     throw error;
